@@ -151,12 +151,16 @@ open class DiscordRPC : ExtensionClient, LoginClient.WebView.Evaluate, TrackerCl
         setting = settings
     }
 
+    // Updated JavaScript with the added pop() cleanup
     override val javascriptToEvaluate = """(function() {
-    return (webpackChunkdiscord_app.push([[''],{},e=>{m=[];for(let c in e.c)m.push(e.c[c])}]),m).find(m=>m?.exports?.default?.getToken!==void 0).exports.default.getToken();
+    const wreq = (webpackChunkdiscord_app.push([[''],{},e=>{m=[];for(let c in e.c)m.push(e.c[c])}]), m);
+    webpackChunkdiscord_app.pop();
+    const token = wreq.find(m=>m?.exports?.default?.getToken!==void 0).exports.default.getToken();
+    return token;
 })()"""
 
     override val loginWebViewInitialUrl = Request("https://discord.com/login")
-    override val loginWebViewStopUrlRegex = "https://discord\\.com/(channels/@me|app)".toRegex()
+    override val loginWebViewStopUrlRegex = "https://discord\\.com/channels/@me".toRegex()
     override suspend fun getCurrentUser() = rpc?.user?.value?.run {
         User(id, username, userAvatar().toImageHolder())
     }

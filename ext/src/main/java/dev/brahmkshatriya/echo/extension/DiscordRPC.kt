@@ -156,7 +156,7 @@ open class DiscordRPC : ExtensionClient, LoginClient.WebView.Evaluate, TrackerCl
 })()"""
 
     override val loginWebViewInitialUrl = Request("https://discord.com/login")
-    override val loginWebViewStopUrlRegex = "https://discord\\.com/channels/@me".toRegex()
+    override val loginWebViewStopUrlRegex = "https://discord\\.com/(channels/@me|app)".toRegex()
     override suspend fun getCurrentUser() = rpc?.user?.value?.run {
         User(id, username, userAvatar().toImageHolder())
     }

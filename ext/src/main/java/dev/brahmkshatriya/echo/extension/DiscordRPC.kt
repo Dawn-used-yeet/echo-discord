@@ -151,30 +151,12 @@ open class DiscordRPC : ExtensionClient, LoginClient.WebView.Evaluate, TrackerCl
         setting = settings
     }
 
-    // Updated JavaScript: Wrapped in try/catch and uses an explicit module collection
     override val javascriptToEvaluate = """(function() {
-    try {
-        let token = null;
-        webpackChunkdiscord_app.push([
-            [""],
-            {},
-            (req) => {
-                let modules = [];
-                for (let id in req.c) {
-                    modules.push(req.c[id]);
-                }
-                token = modules.find(m => m?.exports?.default?.getToken)?.exports.default.getToken();
-            }
-        ]);
-        webpackChunkdiscord_app.pop();
-        return token;
-    } catch(e) {
-        return "error: " + e.message;
-    }
+    return (webpackChunkdiscord_app.push([[''],{},e=>{m=[];for(let c in e.c)m.push(e.c[c])}]),m).find(m=>m?.exports?.default?.getToken!==void 0).exports.default.getToken();
 })()"""
 
     override val loginWebViewInitialUrl = Request("https://discord.com/login")
-    override val loginWebViewStopUrlRegex = "https://discord\\.com/channels/@me".toRegex()
+    override val loginWebViewStopUrlRegex = "https://discord\\.com/app".toRegex()
     override suspend fun getCurrentUser() = rpc?.user?.value?.run {
         User(id, username, userAvatar().toImageHolder())
     }
@@ -186,7 +168,7 @@ open class DiscordRPC : ExtensionClient, LoginClient.WebView.Evaluate, TrackerCl
         val token = data.trim('"')
         val rpc = getRPC(token)
         val user =
-            runCatching { withTimeout(5000) { rpc.user.first { it != null } } }.getOrNull()
+            runCatching { withTimeout(50000) { rpc.user.first { it != null } } }.getOrNull()
         rpc.stop()
         return listOf(
             User(

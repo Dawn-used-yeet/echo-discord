@@ -151,12 +151,26 @@ open class DiscordRPC : ExtensionClient, LoginClient.WebView.Evaluate, TrackerCl
         setting = settings
     }
 
-    // Updated JavaScript with the added pop() cleanup
+    // Updated JavaScript: Wrapped in try/catch and uses an explicit module collection
     override val javascriptToEvaluate = """(function() {
-    const wreq = (webpackChunkdiscord_app.push([[''],{},e=>{m=[];for(let c in e.c)m.push(e.c[c])}]), m);
-    webpackChunkdiscord_app.pop();
-    const token = wreq.find(m=>m?.exports?.default?.getToken!==void 0).exports.default.getToken();
-    return token;
+    try {
+        let token = null;
+        webpackChunkdiscord_app.push([
+            [""],
+            {},
+            (req) => {
+                let modules = [];
+                for (let id in req.c) {
+                    modules.push(req.c[id]);
+                }
+                token = modules.find(m => m?.exports?.default?.getToken)?.exports.default.getToken();
+            }
+        ]);
+        webpackChunkdiscord_app.pop();
+        return token;
+    } catch(e) {
+        return "error: " + e.message;
+    }
 })()"""
 
     override val loginWebViewInitialUrl = Request("https://discord.com/login")

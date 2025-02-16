@@ -63,6 +63,7 @@ open class DiscordRPC : ExtensionClient, LoginClient.WebView.Evaluate, TrackerCl
                         "How the RPC activity title will be shown",
                         Type.entries.map { it.title },
                         Type.entries.map { it.name },
+                        emptySet()
                     ),
                     SettingMultipleChoice(
                         "Activity Name",
@@ -120,6 +121,7 @@ open class DiscordRPC : ExtensionClient, LoginClient.WebView.Evaluate, TrackerCl
                         "Disable RPC for these extensions.",
                         extensionsMap.values.map { it.name },
                         extensionsMap.keys.toList(),
+                        emptySet()
                     )
                 )
             )
@@ -156,7 +158,7 @@ open class DiscordRPC : ExtensionClient, LoginClient.WebView.Evaluate, TrackerCl
 })()"""
 
     override val loginWebViewInitialUrl = Request("https://discord.com/login")
-    override val loginWebViewStopUrlRegex = "https://discord\\.com/app".toRegex()
+    override val loginWebViewStopUrlRegex = "https://discord\\.com/channels/@me".toRegex()
     override suspend fun getCurrentUser() = rpc?.user?.value?.run {
         User(id, username, userAvatar().toImageHolder())
     }
@@ -168,7 +170,7 @@ open class DiscordRPC : ExtensionClient, LoginClient.WebView.Evaluate, TrackerCl
         val token = data.trim('"')
         val rpc = getRPC(token)
         val user =
-            runCatching { withTimeout(50000) { rpc.user.first { it != null } } }.getOrNull()
+            runCatching { withTimeout(5000) { rpc.user.first { it != null } } }.getOrNull()
         rpc.stop()
         return listOf(
             User(

@@ -9,6 +9,7 @@ dependencies {
     implementation(project(":ext"))
     val libVersion: String by project
     compileOnly("com.github.brahmkshatriya:echo:$libVersion")
+    implementation("com.neovisionaries:nv-websocket-client:2.14")
 }
 
 val extType: String by project
